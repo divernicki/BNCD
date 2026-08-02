@@ -1,264 +1,297 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>BNCD</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Family Financial Dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
-  :root {
-    --bg-main: #f8fafc;
-    --card-bg: #ffffff;
-    --text-primary: #0f172a;
-    --text-secondary: #64748b;
-    --accent-blue: #2563eb;
-    --accent-green: #16a34a;
-    --border-color: #e2e8f0;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif; }
-  body { background-color: var(--bg-main); color: var(--text-primary); padding: 16px; max-width: 600px; margin: 0 auto; padding-bottom: 80px; }
-  
-  /* Password Modal */
-  .auth-overlay {
-    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(4px);
-    display: flex; align-items: center; justify-content: center; z-index: 1000;
-  }
-  .auth-card {
-    background: #fff; padding: 24px; border-radius: 16px; width: 90%; max-width: 320px; text-align: center;
-    box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
-  }
-  .auth-card h2 { font-size: 1.2rem; margin-bottom: 8px; }
-  .auth-card p { font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 16px; }
-  .auth-card input {
-    width: 100%; padding: 12px; font-size: 1.2rem; text-align: center; letter-spacing: 4px;
-    border: 2px solid var(--border-color); border-radius: 8px; margin-bottom: 12px; outline: none;
-  }
-  .auth-card button {
-    width: 100%; padding: 12px; background: var(--accent-blue); color: #fff; font-weight: 600;
-    border: none; border-radius: 8px; cursor: pointer; font-size: 1rem;
-  }
+:root {
+  --bg-main: #f8fafc;
+  --card-bg: #ffffff;
+  --text-primary: #0f172a;
+  --text-secondary: #64748b;
+  --accent-blue: #2563eb;
+  --accent-green: #10b981;
+  --border-color: #e2e8f0;
+}
 
-  /* Header & Status Bar */
-  .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-  .header h1 { font-size: 1.3rem; font-weight: 700; }
-  .sync-badge { font-size: 0.75rem; padding: 4px 8px; border-radius: 12px; background: #e2e8f0; color: #475569; }
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
 
-  /* Progress bar */
-  .progress-card { background: var(--card-bg); border-radius: 12px; padding: 16px; margin-bottom: 16px; border: 1px solid var(--border-color); }
-  .progress-info { display: flex; justify-content: space-between; font-size: 0.9rem; font-weight: 600; margin-bottom: 8px; }
-  .progress-bar-bg { height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden; }
-  .progress-bar-fill { height: 100%; width: 0%; background: var(--accent-green); transition: width 0.3s ease; }
+body {
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+  padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
+  padding-bottom: 60px;
+}
 
-  /* ategories and Lists */
-  .category-card { background: var(--card-bg); border-radius: 12px; padding: 16px; margin-bottom: 12px; border: 1px solid var(--border-color); }
-  .category-title { font-size: 1rem; font-weight: 600; margin-bottom: 12px; color: var(--accent-blue); display: flex; justify-content: space-between; }
-  
-  .item-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f1f5f9; }
-  .item-row:last-child { border-bottom: none; }
-  .item-left { display: flex; align-items: center; gap: 10px; cursor: pointer; flex: 1; }
-  .item-left input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent-blue); cursor: pointer; }
-  .item-text { font-size: 0.95rem; }
-  .item-text.completed { text-decoration: line-through; color: #94a3b8; }
-  .btn-del { border: none; background: none; color: #ef4444; font-size: 0.85rem; cursor: pointer; padding: 4px; }
+/* Password Overlay */
+.auth-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(8px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
 
-  /* Add new item */
-  .add-form { display: flex; gap: 8px; margin-top: 8px; }
-  .add-form input { flex: 1; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.9rem; outline: none; }
-  .add-form button { padding: 8px 14px; background: var(--accent-blue); color: #fff; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; }
+.auth-card {
+  background: white;
+  padding: 32px;
+  border-radius: 16px;
+  box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+  text-align: center;
+  width: 90%;
+  max-width: 360px;
+}
+
+.auth-card h2 {
+  font-family: 'Space Grotesk', sans-serif;
+  margin-bottom: 8px;
+  font-size: 1.25rem;
+}
+
+.auth-card p {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  margin-bottom: 20px;
+}
+
+.auth-input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 1.25rem;
+  text-align: center;
+  letter-spacing: 0.25em;
+  margin-bottom: 16px;
+  outline: none;
+}
+
+.auth-btn {
+  width: 100%;
+  padding: 12px;
+  background: var(--accent-blue);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.auth-btn:hover {
+  background: #1d4ed8;
+}
+
+/* Main Dashboard UI */
+header {
+  margin-bottom: 24px;
+}
+
+h1 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.dashboard-grid {
+  display: grid;
+  gap: 20px;
+}
+
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.card-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 12px;
+}
+
+.add-form {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.add-input {
+  flex: 1;
+  padding: 10px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  outline: none;
+}
+
+.add-btn {
+  padding: 10px 16px;
+  background: var(--accent-blue);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+ul.item-list {
+  list-style: none;
+}
+
+ul.item-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+ul.item-list li:last-child {
+  border-bottom: none;
+}
+
+.status-tag {
+  font-size: 0.75rem;
+  padding: 4px 8px;
+  border-radius: 9999px;
+  background: #e0f2fe;
+  color: #0369a1;
+  font-weight: 500;
+}
 </style>
 </head>
 <body>
 
-<!-- Password input window -->
-<div class="auth-overlay" id="authOverlay">
+<!-- Security PIN Screen -->
+<div id="authOverlay" class="auth-overlay">
   <div class="auth-card">
-    <h2>BNCD</h2>
-    <p>lease enter your password.</p>
-    <input type="password" id="passInput" maxlength="6" placeholder="비밀번호">
-    <button id="authBtn">확인</button>
+    <h2>Protected Dashboard</h2>
+    <p>Please enter your 4-digit Passcode</p>
+    <input type="password" id="passInput" class="auth-input" maxlength="4" placeholder="••••">
+    <button id="authBtn" class="auth-btn">Access Dashboard</button>
   </div>
 </div>
 
-<!-- 메인 리스트 화면 -->
-<div class="header">
-  <h1>BNCD</h1>
-  <span class="sync-badge" id="syncStatus">🔄 연결 중...</span>
+<!-- Main Application -->
+<header>
+  <h1>Family Financial Dashboard</h1>
+</header>
+
+<div class="dashboard-grid">
+  <!-- Asset Summary Card -->
+  <div class="card">
+    <div class="card-title">Asset Growth Chart</div>
+    <canvas id="assetChart" height="200"></canvas>
+  </div>
+
+  <!-- Packing / To-Do List Card -->
+  <div class="card">
+    <div class="card-title">Shared Packing List</div>
+    <div class="add-form">
+      <input type="text" id="newItemInput" class="add-input" placeholder="Add new item...">
+      <button id="addItemBtn" class="add-btn">Add</button>
+    </div>
+    <ul id="listContainer" class="item-list">
+      <!-- Items dynamically injected -->
+    </ul>
+  </div>
 </div>
 
-<div class="progress-card">
-  <div class="progress-info">
-    <span>전체 진행률</span>
-    <span id="progressText">0 / 0 (0%)</span>
-  </div>
-  <div class="progress-bar-bg">
-    <div class="progress-bar-fill" id="progressBar"></div>
-  </div>
-</div>
-
-<!-- 항목 추가 폼 -->
-<div class="category-card">
-  <div class="category-title">➕ 새 항목 추가</div>
-  <div class="add-form">
-    <input type="text" id="newItemInput" placeholder="예: 여권, 충전기">
-    <button id="addItemBtn">추가</button>
-  </div>
-</div>
-
-<!-- 체크리스트 목록 영역 -->
-<div id="listContainer"></div>
-
-<!-- Firebase SDK -->
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-  import { getFirestore, doc, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+  // 1. Password Configuration
+  const SECRET_PIN = "3852";
 
-  // 1. Firebase 연동 설정 (질문자님의 bncd-s-finance 프로젝트)
-  const firebaseConfig = {
-    apiKey: "AIzaSyCNgCaIfRRiQcZwUfTB2B1oaMJptVVrniY",
-    authDomain: "bncd-s-finance.firebaseapp.com",
-    projectId: "bncd-s-finance",
-    storageBucket: "bncd-s-finance.firebasestorage.app",
-    messagingSenderId: "788066012125",
-    appId: "1:788066012125:web:67c2c3b226edd2f674c434"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-  const docRef = doc(db, "family_finance", "packing_list");
-
-  // 비밀번호 설정 (원하시는 번호로 변경 가능)
-  const SECRET_PIN = "3852"; 
-
-  // DOM 참조
   const authOverlay = document.getElementById('authOverlay');
   const passInput = document.getElementById('passInput');
   const authBtn = document.getElementById('authBtn');
-  const syncStatus = document.getElementById('syncStatus');
+
+  // Check saved session
+  if (localStorage.getItem('family_auth') === SECRET_PIN) {
+    authOverlay.style.display = 'none';
+  }
+
+  function verifyPassword() {
+    if (passInput.value === SECRET_PIN) {
+      localStorage.setItem('family_auth', SECRET_PIN);
+      authOverlay.style.display = 'none';
+    } else {
+      alert("Incorrect Passcode. Please try again.");
+      passInput.value = "";
+    }
+  }
+
+  authBtn.addEventListener('click', verifyPassword);
+  passInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') verifyPassword();
+  });
+
+  // 2. Chart Initialization
+  const ctx = document.getElementById('assetChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+      datasets: [{
+        label: 'Total Assets (USD)',
+        data: [12000, 13500, 12800, 14200, 15800, 17500],
+        borderColor: '#2563eb',
+        backgroundColor: 'rgba(37, 99, 235, 0.1)',
+        fill: true,
+        tension: 0.3
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: false }
+      }
+    }
+  });
+
+  // 3. Dynamic Checklist Items
+  const initialItems = ["Passports", "International Driving Permits", "MacBook Chargers", "Diving Certification Cards"];
   const listContainer = document.getElementById('listContainer');
   const newItemInput = document.getElementById('newItemInput');
   const addItemBtn = document.getElementById('addItemBtn');
 
-  let currentItems = [];
-
-  // 2. 비밀번호 인증 처리
-  if (localStorage.getItem('family_auth') === SECRET_PIN) {
-    authOverlay.style.display = 'none';
-    initApp();
+  function renderList() {
+    listContainer.innerHTML = "";
+    initialItems.forEach(item => {
+      const li = document.createElement('li');
+      li.innerHTML = `<span>${item}</span><span class="status-tag">Ready</span>`;
+      listContainer.appendChild(li);
+    });
   }
 
-  authBtn.addEventListener('click', () => {
-    if (passInput.value === SECRET_PIN) {
-      localStorage.setItem('family_auth', SECRET_PIN);
-      authOverlay.style.display = 'none';
-      initApp();
-    } else {
-      alert('The password is incorrect.');
+  addItemBtn.addEventListener('click', () => {
+    if (newItemInput.value.trim() !== "") {
+      initialItems.push(newItemInput.value.trim());
+      newItemInput.value = "";
+      renderList();
     }
   });
 
-  // 3. 앱 초기화 및 실시간 동기화 (onSnapshot)
-  function initApp() {
-    onSnapshot(docRef, (docSnap) => {
-      if (docSnap.exists()) {
-        currentItems = docSnap.data().items || [];
-      } else {
-        // 초기 기본 목록
-        currentItems = [
-          { id: 1, text: "여권 및 신분증", completed: false },
-          { id: 2, text: "휴대폰 충전기 및 돼지코", completed: false },
-          { id: 3, text: "상비약 (감기약, 소화제)", completed: false }
-        ];
-        saveToFirebase();
-      }
-      renderList();
-      syncStatus.innerText = '🟢 실시간 동기화 완료';
-      syncStatus.style.backgroundColor = '#dcfce7';
-      syncStatus.style.color = '#15803d';
-    }, (err) => {
-      syncStatus.innerText = '🔴 Connection error';
-      syncStatus.style.backgroundColor = '#fee2e2';
-      syncStatus.style.color = '#b91c1c';
-    });
-  }
-
-  // 4. 화면 리스트 그려주기
-  function renderList() {
-    listContainer.innerHTML = '';
-    
-    if (currentItems.length === 0) {
-      listContainer.innerHTML = '<div class="category-card" style="text-align:center; color:#94a3b8;">등록된 짐 항목이 없습니다.</div>';
-      updateProgress(0, 0);
-      return;
-    }
-
-    const card = document.createElement('div');
-    card.className = 'category-card';
-
-    let completedCount = 0;
-
-    currentItems.forEach((item, index) => {
-      if (item.completed) completedCount++;
-
-      const row = document.createElement('div');
-      row.className = 'item-row';
-      row.innerHTML = `
-        <div class="item-left">
-          <input type="checkbox" ${item.completed ? 'checked' : ''}>
-          <span class="item-text ${item.completed ? 'completed' : ''}">${item.text}</span>
-        </div>
-        <button class="btn-del">삭제</button>
-      `;
-
-      // 체크박스 클릭 토글
-      row.querySelector('.item-left').addEventListener('click', () => {
-        currentItems[index].completed = !currentItems[index].completed;
-        saveToFirebase();
-      });
-
-      // 항목 삭제
-      row.querySelector('.btn-del').addEventListener('click', (e) => {
-        e.stopPropagation();
-        currentItems.splice(index, 1);
-        saveToFirebase();
-      });
-
-      card.appendChild(row);
-    });
-
-    listContainer.appendChild(card);
-    updateProgress(completedCount, currentItems.length);
-  }
-
-  // 진행도 업데이트
-  function updateProgress(completed, total) {
-    const percent = total === 0 ? 0 : Math.round((completed / total) * 100);
-    document.getElementById('progressText').innerText = `${completed} / ${total} (${percent}%)`;
-    document.getElementById('progressBar').style.width = `${percent}%`;
-  }
-
-  // 항목 추가
-  addItemBtn.addEventListener('click', addItem);
-  newItemInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') addItem(); });
-
-  function addItem() {
-    const text = newItemInput.value.trim();
-    if (!text) return;
-    currentItems.push({ id: Date.now(), text: text, completed: false });
-    newItemInput.value = '';
-    saveToFirebase();
-  }
-
-  // Firebase에 데이터 저장
-  async function saveToFirebase() {
-    try {
-      await setDoc(docRef, { items: currentItems, updatedAt: new Date().toISOString() });
-    } catch (e) {
-      console.error("저장 실패:", e);
-    }
-  }
+  renderList();
 </script>
-
 </body>
 </html>
