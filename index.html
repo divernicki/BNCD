@@ -19,7 +19,7 @@
   * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif; }
   body { background-color: var(--bg-main); color: var(--text-primary); padding: 16px; max-width: 600px; margin: 0 auto; padding-bottom: 80px; }
   
-  /* 비밀번호 모달 */
+  /* Password Modal */
   .auth-overlay {
     position: fixed; top: 0; left: 0; right: 0; bottom: 0;
     background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(4px);
@@ -40,18 +40,18 @@
     border: none; border-radius: 8px; cursor: pointer; font-size: 1rem;
   }
 
-  /* 헤더 & 상태 바 */
+  /* Header & Status Bar */
   .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
   .header h1 { font-size: 1.3rem; font-weight: 700; }
   .sync-badge { font-size: 0.75rem; padding: 4px 8px; border-radius: 12px; background: #e2e8f0; color: #475569; }
 
-  /* 진행도 바 */
+  /* Progress bar */
   .progress-card { background: var(--card-bg); border-radius: 12px; padding: 16px; margin-bottom: 16px; border: 1px solid var(--border-color); }
   .progress-info { display: flex; justify-content: space-between; font-size: 0.9rem; font-weight: 600; margin-bottom: 8px; }
   .progress-bar-bg { height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden; }
   .progress-bar-fill { height: 100%; width: 0%; background: var(--accent-green); transition: width 0.3s ease; }
 
-  /* 카테고리 및 리스트 */
+  /* ategories and Lists */
   .category-card { background: var(--card-bg); border-radius: 12px; padding: 16px; margin-bottom: 12px; border: 1px solid var(--border-color); }
   .category-title { font-size: 1rem; font-weight: 600; margin-bottom: 12px; color: var(--accent-blue); display: flex; justify-content: space-between; }
   
@@ -63,7 +63,7 @@
   .item-text.completed { text-decoration: line-through; color: #94a3b8; }
   .btn-del { border: none; background: none; color: #ef4444; font-size: 0.85rem; cursor: pointer; padding: 4px; }
 
-  /* 새 항목 추가 */
+  /* Add new item */
   .add-form { display: flex; gap: 8px; margin-top: 8px; }
   .add-form input { flex: 1; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.9rem; outline: none; }
   .add-form button { padding: 8px 14px; background: var(--accent-blue); color: #fff; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; }
@@ -71,11 +71,11 @@
 </head>
 <body>
 
-<!-- 비밀번호 입력 창 -->
+<!-- Password input window -->
 <div class="auth-overlay" id="authOverlay">
   <div class="auth-card">
     <h2>BNCD</h2>
-    <p>우리 가족 전용 비밀번호를 입력하세요.</p>
+    <p>lease enter your password.</p>
     <input type="password" id="passInput" maxlength="6" placeholder="비밀번호">
     <button id="authBtn">확인</button>
   </div>
@@ -154,7 +154,7 @@
       authOverlay.style.display = 'none';
       initApp();
     } else {
-      alert('비밀번호가 올바르지 않습니다.');
+      alert('The password is incorrect.');
     }
   });
 
@@ -177,7 +177,7 @@
       syncStatus.style.backgroundColor = '#dcfce7';
       syncStatus.style.color = '#15803d';
     }, (err) => {
-      syncStatus.innerText = '🔴 연결 오류';
+      syncStatus.innerText = '🔴 Connection error';
       syncStatus.style.backgroundColor = '#fee2e2';
       syncStatus.style.color = '#b91c1c';
     });
