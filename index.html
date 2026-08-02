@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>우리 집 짐 싸기 체크리스트</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-main: #f8fafc;
+    --card-bg: #ffffff;
+    --text-primary: #0f172a;
+    --text-secondary: #64748b;
+    --accent-blue: #2563eb;
+    --accent-green: #16a34a;
+    --border-color: #e2e8f0;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif; }
+  body { background-color: var(--bg-main); color: var(--text-primary); padding: 16px; max-width: 600px; margin: 0 auto; padding-bottom: 80px; }
+  
+  /* 비밀번호 모달 */
+  .auth-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(4px);
+    display: flex; align-items: center; justify-content: center; z-index: 1000;
+  }
+  .auth-card {
+    background: #fff; padding: 24px; border-radius: 16px; width: 90%; max-width: 320px; text-align: center;
+    box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
+  }
+  .auth-card h2 { font-size: 1.2rem; margin-bottom: 8px; }
+  .auth-card p { font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 16px; }
+  .auth-card input {
+    width: 100%; padding: 12px; font-size: 1.2rem; text-align: center; letter-spacing: 4px;
+    border: 2px solid var(--border-color); border-radius: 8px; margin-bottom: 12px; outline: none;
+  }
+  .auth-card button {
+    width: 100%; padding: 12px; background: var(--accent-blue); color: #fff; font-weight: 600;
+    border: none; border-radius: 8px; cursor: pointer; font-size: 1rem;
+  }
+
+  /* 헤더 & 상태 바 */
+  .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+  .header h1 { font-size: 1.3rem; font-weight: 700; }
+  .sync-badge { font-size: 0.75rem; padding: 4px 8px; border-radius: 12px; background: #e2e8f0; color: #475569; }
+
+  /* 진행도 바 */
+  .progress-card { background: var(--card-bg); border-radius: 12px; padding: 16px; margin-bottom: 16px; border: 1px solid var(--border-color); }
+  .progress-info { display: flex; justify-content: space-between; font-size: 0.9rem; font-weight: 600; margin-bottom: 8px; }
+  .progress-bar-bg { height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden; }
+  .progress-bar-fill { height: 100%; width: 0%; background: var(--accent-green); transition: width 0.3s ease; }
+
+  /* 카테고리 및 리스트 */
+  .category-card { background: var(--card-bg); border-radius: 12px; padding: 16px; margin-bottom: 12px; border: 1px solid var(--border-color); }
+  .category-title { font-size: 1rem; font-weight: 600; margin-bottom: 12px; color: var(--accent-blue); display: flex; justify-content: space-between; }
+  
+  .item-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f1f5f9; }
+  .item-row:last-child { border-bottom: none; }
+  .item-left { display: flex; align-items: center; gap: 10px; cursor: pointer; flex: 1; }
+  .item-left input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent-blue); cursor: pointer; }
+  .item-text { font-size: 0.95rem; }
+  .item-text.completed { text-decoration: line-through; color: #94a3b8; }
+  .btn-del { border: none; background: none; color: #ef4444; font-size: 0.85rem; cursor: pointer; padding: 4px; }
+
+  /* 새 항목 추가 */
+  .add-form { display: flex; gap: 8px; margin-top: 8px; }
+  .add-form input { flex: 1; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.9rem; outline: none; }
+  .add-form button { padding: 8px 14px; background: var(--accent-blue); color: #fff; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; }
+</style>
+</head>
+<body>
+
+<!-- 비밀번호 입력 창 -->
+<div class="auth-overlay" id="authOverlay">
+  <div class="auth-card">
+    <h2>짐 싸기 체크리스트</h2>
+    <p>우리 가족 전용 비밀번호를 입력하세요.</p>
+    <input type="password" id="passInput" maxlength="6" placeholder="비밀번호">
+    <button id="authBtn">확인</button>
+  </div>
+</div>
+
+<!-- 메인 리스트 화면 -->
+<div class="header">
+  <h1>🧳 짐 싸기 체크리스트</h1>
+  <span class="sync-badge" id="syncStatus">🔄 연결 중...</span>
+</div>
+
+<div class="progress-card">
+  <div class="progress-info">
+    <span>전체 진행률</span>
+    <span id="progressText">0 / 0 (0%)</span>
+  </div>
+  <div class="progress-bar-bg">
+    <div class="progress-bar-fill" id="progressBar"></div>
+  </div>
+</div>
+
+<!-- 항목 추가 폼 -->
+<div class="category-card">
+  <div class="category-title">➕ 새 항목 추가</div>
+  <div class="add-form">
+    <input type="text" id="newItemInput" placeholder="예: 여권, 충전기">
+    <button id="addItemBtn">추가</button>
+  </div>
+</div>
+
+<!-- 체크리스트 목록 영역 -->
+<div id="listContainer"></div>
+
+<!-- Firebase SDK -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { getFirestore, doc, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+  // 1. Firebase 연동 설정 (질문자님의 bncd-s-finance 프로젝트)
+  const firebaseConfig = {
+    apiKey: "AIzaSyCNgCaIfRRiQcZwUfTB2B1oaMJptVVrniY",
+    authDomain: "bncd-s-finance.firebaseapp.com",
+    projectId: "bncd-s-finance",
+    storageBucket: "bncd-s-finance.firebasestorage.app",
+    messagingSenderId: "788066012125",
+    appId: "1:788066012125:web:67c2c3b226edd2f674c434"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const docRef = doc(db, "family_finance", "packing_list");
+
+  // 비밀번호 설정 (원하시는 번호로 변경 가능)
+  const SECRET_PIN = "1111"; 
+
+  // DOM 참조
+  const authOverlay = document.getElementById('authOverlay');
+  const passInput = document.getElementById('passInput');
+  const authBtn = document.getElementById('authBtn');
+  const syncStatus = document.getElementById('syncStatus');
+  const listContainer = document.getElementById('listContainer');
+  const newItemInput = document.getElementById('newItemInput');
+  const addItemBtn = document.getElementById('addItemBtn');
+
+  let currentItems = [];
+
+  // 2. 비밀번호 인증 처리
+  if (localStorage.getItem('family_auth') === SECRET_PIN) {
+    authOverlay.style.display = 'none';
+    initApp();
+  }
+
+  authBtn.addEventListener('click', () => {
+    if (passInput.value === SECRET_PIN) {
+      localStorage.setItem('family_auth', SECRET_PIN);
+      authOverlay.style.display = 'none';
+      initApp();
+    } else {
+      alert('비밀번호가 올바르지 않습니다.');
+    }
+  });
+
+  // 3. 앱 초기화 및 실시간 동기화 (onSnapshot)
+  function initApp() {
+    onSnapshot(docRef, (docSnap) => {
+      if (docSnap.exists()) {
+        currentItems = docSnap.data().items || [];
+      } else {
+        // 초기 기본 목록
+        currentItems = [
+          { id: 1, text: "여권 및 신분증", completed: false },
+          { id: 2, text: "휴대폰 충전기 및 돼지코", completed: false },
+          { id: 3, text: "상비약 (감기약, 소화제)", completed: false }
+        ];
+        saveToFirebase();
+      }
+      renderList();
+      syncStatus.innerText = '🟢 실시간 동기화 완료';
+      syncStatus.style.backgroundColor = '#dcfce7';
+      syncStatus.style.color = '#15803d';
+    }, (err) => {
+      syncStatus.innerText = '🔴 연결 오류';
+      syncStatus.style.backgroundColor = '#fee2e2';
+      syncStatus.style.color = '#b91c1c';
+    });
+  }
+
+  // 4. 화면 리스트 그려주기
+  function renderList() {
+    listContainer.innerHTML = '';
+    
+    if (currentItems.length === 0) {
+      listContainer.innerHTML = '<div class="category-card" style="text-align:center; color:#94a3b8;">등록된 짐 항목이 없습니다.</div>';
+      updateProgress(0, 0);
+      return;
+    }
+
+    const card = document.createElement('div');
+    card.className = 'category-card';
+
+    let completedCount = 0;
+
+    currentItems.forEach((item, index) => {
+      if (item.completed) completedCount++;
+
+      const row = document.createElement('div');
+      row.className = 'item-row';
+      row.innerHTML = `
+        <div class="item-left">
+          <input type="checkbox" ${item.completed ? 'checked' : ''}>
+          <span class="item-text ${item.completed ? 'completed' : ''}">${item.text}</span>
+        </div>
+        <button class="btn-del">삭제</button>
+      `;
+
+      // 체크박스 클릭 토글
+      row.querySelector('.item-left').addEventListener('click', () => {
+        currentItems[index].completed = !currentItems[index].completed;
+        saveToFirebase();
+      });
+
+      // 항목 삭제
+      row.querySelector('.btn-del').addEventListener('click', (e) => {
+        e.stopPropagation();
+        currentItems.splice(index, 1);
+        saveToFirebase();
+      });
+
+      card.appendChild(row);
+    });
+
+    listContainer.appendChild(card);
+    updateProgress(completedCount, currentItems.length);
+  }
+
+  // 진행도 업데이트
+  function updateProgress(completed, total) {
+    const percent = total === 0 ? 0 : Math.round((completed / total) * 100);
+    document.getElementById('progressText').innerText = `${completed} / ${total} (${percent}%)`;
+    document.getElementById('progressBar').style.width = `${percent}%`;
+  }
+
+  // 항목 추가
+  addItemBtn.addEventListener('click', addItem);
+  newItemInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') addItem(); });
+
+  function addItem() {
+    const text = newItemInput.value.trim();
+    if (!text) return;
+    currentItems.push({ id: Date.now(), text: text, completed: false });
+    newItemInput.value = '';
+    saveToFirebase();
+  }
+
+  // Firebase에 데이터 저장
+  async function saveToFirebase() {
+    try {
+      await setDoc(docRef, { items: currentItems, updatedAt: new Date().toISOString() });
+    } catch (e) {
+      console.error("저장 실패:", e);
+    }
+  }
+</script>
+
+</body>
+</html>
